@@ -1,0 +1,110 @@
+// src/pages/LandingPage.js
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const LandingPage = () => {
+  return (
+    <div className='flex flex-col items-center justify-center h-screen bg-cover bg-center' style={{ backgroundImage: 'url(/background.jpg)' }}>
+      <h1 className='text-4xl font-bold mb-4'>Houseplant Store</h1>
+      <p className='text-lg mb-6'>Your one-stop shop for beautiful and healthy houseplants!</p>
+      <Link to='/products'>
+        <button className='bg-green-500 text-white px-4 py-2 rounded'>Get Started</button>
+      </Link>
+    </div>
+  );
+};
+
+  
+
+// src/pages/ProductListingPage.js
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../slices/cartSlice';
+
+const plants = [
+  { id: 1, name: 'Fiddle Leaf Fig', price: 30, thumbnail: '/plants/fig.jpg', category: 'Large' },
+  { id: 2, name: 'Snake Plant', price: 20, thumbnail: '/plants/snake.jpg', category: 'Medium' },
+  { id: 3, name: 'Pothos', price: 15, thumbnail: '/plants/pothos.jpg', category: 'Small' },
+  { id: 4, name: 'Monstera', price: 35, thumbnail: '/plants/monstera.jpg', category: 'Large' },
+  { id: 5, name: 'Spider Plant', price: 10, thumbnail: '/plants/spider.jpg', category: 'Small' },
+  { id: 6, name: 'Peace Lily', price: 25, thumbnail: '/plants/peace.jpg', category: 'Medium' },
+];
+
+const ProductListingPage = () => {
+  const dispatch = useDispatch();
+
+  return (
+    <div className='p-6 grid grid-cols-3 gap-4'>
+      {plants.map((plant) => (
+        <div key={plant.id} className='border p-4 rounded'>
+          <img src={plant.thumbnail} alt={plant.name} className='w-full h-32 object-cover mb-2' />
+          <h2 className='text-lg font-bold'>{plant.name}</h2>
+          <p className='text-sm'>${plant.price}</p>
+          <button
+            className='mt-2 bg-green-500 text-white px-2 py-1 rounded'
+            onClick={() => dispatch(addToCart(plant))}
+          >
+            Add to Cart
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+
+// src/pages/Header.js
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
+const Header = () => {
+  const totalItems = useSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
+
+  return (
+    <header className='bg-gray-800 text-white p-4 flex justify-between items-center'>
+      <Link to='/products' className='text-xl font-bold'>Houseplant Store</Link>
+      <nav className='flex gap-4'>
+        <Link to='/products'>Products</Link>
+        <Link to='/cart'>Cart ({totalItems})</Link>
+      </nav>
+    </header>
+  );
+};
+
+
+// src/pages/ShoppingCartPage.js
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { increaseQuantity, decreaseQuantity, removeFromCart } from '../slices/cartSlice';
+import { Link } from 'react-router-dom';
+
+const ShoppingCartPage = () => {
+  const dispatch = useDispatch();
+  const items = useSelector((state) => state.cart.items);
+  const totalCost = items.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  return (
+    <div className='p-6'>
+      <h1 className='text-2xl font-bold mb-4'>Shopping Cart</h1>
+      {items.map((item) => (
+        <div key={item.id} className='border p-4 rounded mb-2'>
+          <img src={item.thumbnail} alt={item.name} className='w-16 h-16 object-cover' />
+          <h2 className='text-lg'>{item.name}</h2>
+          <p>${item.price}</p>
+          <p>Quantity: {item.quantity}</p>
+          <button onClick={() => dispatch(increaseQuantity(item.id))}>+</button>
+          <button onClick={() => dispatch(decreaseQuantity(item.id))}>-</button>
+          <button onClick={() => dispatch(removeFromCart(item.id))}>Delete</button>
+        </div>
+      ))}
+      <p className='text-lg font-bold'>Total Cost: ${totalCost}</p>
+      <button className='bg-blue-500 text-white px-4 py-2 rounded'>Checkout (Coming Soon)</button>
+      <Link to='/products'>
+        <button className='bg-gray-500 text-white px-4 py-2 rounded ml-4'>Continue Shopping</button>
+      </Link>
+    </div>
+  );
+};
+
+export default ShoppingCartPage;
